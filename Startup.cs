@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OnlineManager.Commons.Services;
 using OnlineManager.Models.Customized;
 using Relation.Middlewares;
 using System;

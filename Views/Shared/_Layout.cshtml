@@ -1,0 +1,470 @@
+@using Dapper;
+@using Microsoft.Data.SqlClient;
+@using Microsoft.AspNetCore.Http;
+@inject IHttpContextAccessor HttpContextAccessor
+@using Microsoft.Extensions.Configuration;
+@using Relation.BusinessLogic.Home;
+@using static OnlineManager.ViewModels.Home.MenuVM;
+@using static Relation.ViewModels.Login.SsoVM;
+@inject IHttpContextAccessor Accessor
+@inject IConfiguration _config
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>測試系統</title>
+
+
+    <!-- Custom fonts for this template-->
+    <link href="~/ex/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="~/css/site.css" rel="stylesheet">
+    <!-- Bootstrap core JavaScript-->
+    <script src="~/ex/jquery/jquery.min.js"></script>
+
+    <!--jQuery UI-->
+    <link href="~/js/jQueryUI/jquery-ui.css" rel="stylesheet" />
+    @*<script src="~/js/jQueryUI/jquery-1.10.2.js"></script>*@
+    <script src="~/js/jQueryUI/jquery-ui.js"></script>
+
+    <script src="~/ex/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="~/ex/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="~/js/sb-admin-2.min.js"></script>
+
+    <!-- datatebls-->
+    <script src="~/ex/datatables/jquery.dataTables.js"></script>
+    <script src="~/ex/datatables/dataTables.bootstrap4.js"></script>
+    <link href="~/ex/datatables/dataTables.bootstrap4.css" rel="stylesheet" />
+    <script src="~/ex/datatables/zh_lang.js"></script>
+
+    <!--MultiSelect-->
+    <link href="~/ex/multiselect/css/bootstrap-multiselect.css" rel="stylesheet" />
+    <script src="~/ex/multiselect/js/bootstrap-multiselect.js"></script>
+
+    <!-- Page level plugins -->
+    <!--<script src="~/ex/chart.js/Chart.min.js"></script>-->
+    <!-- Page level custom scripts -->
+    <!-- <script src="~/js/demo/chart-area-demo.js"></script> -->
+    <!-- <script src="~/js/demo/chart-pie-demo.js"></script> -->
+    <!-- 取得前端共用script -->
+    <script src="~/js/cathaysite.js?v=202401311601"></script>
+
+    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="~/js/Utils/validateOptions.js"></script>
+    @*
+    <script src="~/js/jQueryUI/chineseDatepicker.js"></script>*@
+
+    <link href="~/css/breadcrumb.css" rel="stylesheet" />
+    @*時間處理js*@
+    <script src="~/ex/momentjs/moment.min.js"></script>
+    <script src="~/ex/momentjs/moment-with-locales.js"></script>
+    <!--下拉式選單格式 selectWrapper-->
+    <style>
+        .selectWrapper {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #bbb;
+            border-radius: 2px;
+            background: #FFFFFF url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2211%22%20height%3D%2211%22%20viewBox%3D%220%200%2011%2011%22%3E%3Cpath%20d%3D%22M4.33%208.5L0%201L8.66%201z%22%20fill%3D%22%2300AEA9%22%2F%3E%3C%2Fsvg%3E') right 13px center no-repeat;
+        }
+
+            .selectWrapper select {
+                padding: 12px 40px 12px 20px;
+                font-size: 18px;
+                line-height: 18px;
+                width: 100%;
+                border: none;
+                box-shadow: none;
+                background: transparent;
+                background-image: none;
+                -webkit-appearance: none;
+                outline: none;
+                cursor: pointer;
+                -moz-appearance: none;
+                text-indent: 0.01px;
+                text-overflow: ellipsis;
+            }
+    </style>
+
+    <!--文字框底線-->
+    <style>
+        .input-underline {
+            border: 1px;
+            border-bottom-style: solid;
+            border-top-style: none;
+            border-left-style: none;
+            border-right-style: none;
+            text-align: center;
+            color: blue;
+        }
+    </style>
+
+    <!--Form Column Title-->
+    <style>
+        .form-col-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: blue;
+        }
+        .container {
+            max-width: 100%;
+        }
+    </style>
+
+    <!-- 取得Token內Menu資料 設到全域變數中 用FOR或FILTER產生  改用Model Binding -->
+    <script>
+        //var xxx = window.localStorage.getItem("relationToken");
+    </script>
+    <!-- 跟目錄路徑-->
+    <script>
+        const env = '@_config.GetSection("Environment").Value';
+        const root = (env != "LOCAL") ? '@_config.GetSection("IISRoot").Value' : "";
+    </script>
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color: #108639;">
+
+            <!-- Sidebar - 標題 -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="~/Home/Index">
+                <div class="sidebar-brand-icon">
+                    <img src="~/img/tree-logo.png" height="40" width="54" />
+                </div>
+                <div class="sidebar-brand-text mx-3" style="font-size:18px;">國泰投信</div>
+            </a>
+
+            <!-- 分隔線 -->
+            <hr class="sidebar-divider my-0" />
+
+            <!-- Nav Item - 最新消息-->
+            <li class="nav-item active">
+                <a class="nav-link" href="~/Home/Index">
+                    <i class="fas fa-fw fa-file-alt"></i>
+                    <span>最新消息</span>
+                </a>
+            </li>
+            <div id="jstreeMain"></div>
+            <!-- 分隔線 -->
+            <hr class="sidebar-divider" />
+            @{
+                #region Function
+                List<JstreeList> OdData(List<JstreeList> list)
+                {
+                    List<JstreeList> new_list = new List<JstreeList>();
+                    AddChlid("#", list, ref new_list);
+                    return new_list;
+                }
+                string AddChlid(string k, List<JstreeList> list, ref List<JstreeList> new_list)
+                {
+                    var cl = list.Where(x => x.parent == k);
+                    if (cl.Count() > 0)
+                    {
+                        foreach (var c in cl)
+                        {
+                            new_list.Add(c);
+                            if (list.Where(x => x.parent == c.id).Count() > 0)
+                            {
+                                AddChlid(c.id, list, ref new_list);
+                            }
+                        }
+                    }
+                    return "";
+                }
+                /// <summary>
+                /// 取得Menu權限
+                /// </summary>
+                /// <returns></returns>
+                List<JstreeList> GetJstreeData(string _EmpNo)
+                {
+                    // 建立連線並操作
+                    using (var conn = new SqlConnection(_config.GetConnectionString("Default")))
+                    {
+                        // DB Link 字串
+                        string Leave_LinkStr = _config.GetValue<string>("ConnectionDBLink:LEAVE");
+                        // 參數
+                        var para = new DynamicParameters();
+                        string sql = $@"
+            SELECT
+            a.prg_id as id,
+            a.parent as parent,
+            a.des1 as text,
+            a.url as href,
+            a.order_no as Sort
+            FROM tbl_emp_menu a
+            INNER JOIN  ( SELECT prg_id FROM ecusermenu
+            WHERE user_id = (select Top 1 join_group from ecusermenu where user_id = @empNo)
+            ) b on a.prg_id = b.prg_id
+            where a.active='Y'
+            order by a.parent,a.order_no asc ";
+
+                        para.Add("empNo", _EmpNo, System.Data.DbType.String);
+                        // 執行Query
+                        var result = conn.Query<JstreeList>(sql, para);
+                        return result.ToList();
+                    }
+                }
+                #endregion
+
+                //取得登入員編
+                var _EmpNo = Newtonsoft.Json.JsonConvert.DeserializeObject<SsoEmpData>(HttpContextAccessor.HttpContext.Session.GetString("UserData")).empNo;
+                //取得Menu清單
+                var response = new List<JstreeList>();
+                //Menu排序(階層)
+                if (string.IsNullOrWhiteSpace(Accessor.HttpContext.Session.GetString("Message")) || Accessor.HttpContext.Session.GetString("Message") == "[]")
+                {
+                    response = GetJstreeData(_EmpNo); //取資料庫
+                    response = OdData(response);  //排序
+                    Accessor.HttpContext.Session.SetString("Message", Newtonsoft.Json.JsonConvert.SerializeObject(response));
+                }
+                else
+                {
+                    response = Newtonsoft.Json.JsonConvert.DeserializeObject<List<JstreeList>>(Accessor.HttpContext.Session.GetString("Message"));
+                }
+                var root = response.Where(x => x.parent == "#");
+                //目錄層
+                foreach (var r in root)
+                {
+                        <li class="nav-item">
+                            <a class="nav-link collapsed"
+                           href="#@("Tree"+r.id)"
+                           role="button"
+                           data-toggle="collapse"
+                           aria-expanded="false"
+                           aria-controls="@("Tree"+r.id)">
+                                <i class="fas fa-fw fa-user"></i>
+                                <span>@r.text</span>
+                            </a>
+                            <div id="@("Tree"+r.id)" class="collapse multi-collapse" aria-labelledby="@("Tree"+r.id)">
+                                <div class="bg-white py-2 collapse-inner rounded" name="@("Tree"+r.id)">
+                                    @{
+                                    var environment = _config.GetSection("Environment").Value;
+                                    var iisroot = _config.GetSection("IISRoot").Value;
+                                    foreach (var cr in response.Where(x => x.parent == r.id))
+                                    {
+                                         var path = (environment == "LOCAL" ? "" : iisroot) + cr.href;
+                                                <a class="collapse-item"
+                                                   style="overflow:hidden"
+                                                   href="@path"
+                                                   id="@cr.id"
+                                                   onclick="saveTab('@cr.id')">@cr.text
+                                                </a>
+                                    }
+                                    }
+                                </div>
+                            </div>
+                        </li>
+                }
+            }
+
+            <!-- 分隔線 -->
+            <hr class="sidebar-divider d-none d-md-block" />
+
+
+            <!-- Sidebar Toggler 縮放 -->
+            <!-- Sidebar 下方訊息 -->
+            <div class="sidebar-card d-none d-lg-flex word-auto-break" style=" align-items:flex-start;overflow:hidden">
+                系統問題<br />
+                <a href="mailto:alex@cathaysite.com.tw" style="color:white;">alex@cathaysite.com.tw</a>
+                <br />
+                <a href="mailto:jimmychang@cathaysite.com.tw" style="color:white;">jimmychang@cathaysite.com.tw</a>
+            </div>
+
+        </ul>
+        <!-- End of Sidebar -->
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content 最上方功能列 -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                    <!-- Sidebar Toggle (Topbar縮放) -->
+                    <button id="sidebarToggleTop" class="btn btn-link rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <!-- Topbar Title (網站標頭) -->
+                    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                        <div class="input-group" style="font-family: 'Segoe UI',SegoeUI,'Segoe WP',system-ui,sans-serif; font-size: 25px; font-weight: 600; color: black; ">
+                            測試系統
+                        </div>
+                    </form>
+
+                    <!-- Topbar Navbar 最上方功能列 -->
+                    <ul class="navbar-nav ml-auto">
+
+                        <!-- Nav Item - 提示訊息 -->
+                        <!-- Nav Item - 分隔線 -->
+                        <li class="topbar-divider d-none d-sm-block"></li>
+
+                        <!-- Nav Item - 使用者訊息 -->
+                        <li class="nav-item dropdown no-arrow">
+
+                            <!--個人資料-->
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+
+                                <!--個人資料顯示-->
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="loginUserProfile"></span>
+
+                                <!--個人頭像檔-->
+                                <img class="img-profile rounded-circle" src="~/img/UserIcon.png" id="loginUserIcon">
+                            </a>
+
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+
+                                <!--<a class="dropdown-item" href="#">-->
+                                <!--<i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>-->
+                                <!--個人操作紀錄-->
+                                <!--</a>-->
+
+
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    登出
+                                </a>
+
+                            </div>
+                        </li>
+
+
+
+                    </ul>
+
+                </nav>
+                <!-- End of Topbar -->
+                <!-- Begin Page Content -->
+                @RenderBody()
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; </span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+    <!-- Scroll to Top Button (回到頁首)-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">是否確定要登出?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">請選擇下方登出按鈕並回到登入頁面</div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
+                    <a class="btn btn-primary" href="~/Login/Index">登出</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 顯示TopBar 個人資料 -->
+    <script>
+
+        var mode = '@_config.GetSection("Environment").Value';
+        if (mode != "LOCAL") { $.fn.dataTable.ext.errMode = 'none'; }
+
+        document.getElementById("loginUserProfile").innerHTML = window.localStorage.getItem("titleMessage");
+
+    </script>
+
+    <!-- 監聽Menu點擊Click事件 等畫面刷新後Menu自動展開該Menu功能 -->
+    <script>
+        $('#accordionSidebar div div').on('click', function() {
+
+            // 放到 Local Storage
+            window.localStorage.setItem("relationMenu", $(this).attr("name"));
+
+        });
+        $('#accordionSidebar').on('shown.bs.collapse', function() {
+            sessionStorage.setItem("OpenNav", JSON.stringify(Array.from($("div[id^=Tree].show").map((x, i) => i.id))))
+        })
+        $('#accordionSidebar').on('hidden.bs.collapse', function() {
+            sessionStorage.setItem("OpenNav", JSON.stringify(Array.from($("div[id^=Tree].show").map((x, i) => i.id))))
+        })
+        // 若有之前儲存的Menu紀錄 就顯示出來
+        if (window.localStorage.getItem("relationMenu") != null) {
+            document.getElementById(window.localStorage.getItem("relationMenu")).classList.add("show");
+        }
+
+        if (sessionStorage.getItem("OpenNav")) {
+            let arr = JSON.parse(sessionStorage.getItem("OpenNav"));
+            for (let i = 0; i < arr.length; i++) {
+                $(`div[id=${arr[i]}`).addClass("show");
+            }
+        }
+    </script>
+
+    <script>
+        function saveTab(id) {
+            sessionStorage.setItem("MenuTab", id);
+
+        }
+        if (sessionStorage.getItem("MenuTab") != null) {
+            document.getElementById(window.sessionStorage.getItem("MenuTab")).classList.add("active");
+        }
+    </script>
+    <!--點擊登出按鈕後 清除Token-->
+    <script>
+        //function DeleteToken() {
+        //    localStorage.removeItem('relationToken');
+        //}
+    </script>
+    <!-- 設定breadcrumb-->
+    <script>
+        var node = $("a.active").text();
+        var parent = $(`a[href='#${$("a.active").parent().parent().attr("id")}']`).find("span").html();
+        $(".breadcrumb").html('')
+            .append($("<li>").html("網站"))
+            .append($("<li>").html(parent))
+            .append($("<li>").html(node))
+    </script>
+</body>
+
+</html>
