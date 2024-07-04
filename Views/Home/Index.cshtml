@@ -1,0 +1,83 @@
+﻿<!-- Dashboard 首頁 -->
+
+<div class="container-fluid">
+
+    <!-- 頁面起始 -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">最新消息</h1>
+
+        <a href="~/Home/Index" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-redo fa-sm text-white-50"></i> 重新整理
+        </a>
+    </div>
+
+    <!--最新消息-->
+    <div id="Home_News_Content">
+
+
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    function GetNews() {
+
+        var url = "/Home/GetNewsList";
+        var data = null;
+
+        $.post(url, data)
+            .done(function (result) {
+                if (result.isSuccess) {
+                    if (result.data != null) { // 有資料，利用Template更新畫面
+
+                        // 先清空畫面
+                        document.getElementById('Home_News_Content').innerHTML = "";
+
+                        // 塞資料並做Append
+                        result.data.forEach(newsItem => {
+                            // 用 createElement 增加一個 DOM 節點
+                            var str = document.createElement('div');
+
+                            // 增加class屬性
+                            str.setAttribute("class", "row");
+
+                            // Lisi Item 取代資料
+                            str.innerHTML = `<div class="card shadow mb-4" style="width:100%">
+
+                                                <div class="card-header py-3" >
+                                                    <h6  class="m-0 font-weight-bold text-primary">${newsItem.newsTitle}</h6>
+                                                </div >
+
+                                                <div class="card-body">
+                                                    <span>${newsItem.newsContent}</span>
+                                                </div>                                                                                             
+
+                                            </div>`;
+
+                            // Repeat Append HTML
+                            document.getElementById('Home_News_Content').appendChild(str);
+
+                        });
+                    }
+                    else {
+                        // 查無資料
+                        document.getElementById('Home_News_Content').innerHTML = "查無任何最新消息";
+                    }
+                }
+                else {
+                    alert(result.returnMessage);
+                }
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                alert("異常發生，請確認資料內容正常，稍後再試或連繫IT人員");
+            });
+    }
+
+    // 取得畫面最新資訊
+    GetNews();
+
+</script>
